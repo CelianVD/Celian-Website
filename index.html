@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Célian</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      /* Redirection vers un rouge vif/sombre bien plus prononcé */
+      background: radial-gradient(circle at center, #5c0808 0%, #1a0202 60%, #05020a 100%);
+      color: #fff;
+      font-family: system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    #space-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .home-hero__inner {
+      text-align: center;
+      z-index: 2;
+      position: relative;
+    }
+
+    .heading-xl {
+      font-size: clamp(4rem, 12vw, 8rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-shadow: 0 0 35px rgba(255, 40, 40, 0.6);
+    }
+
+    .letter {
+      display: inline-block;
+      will-change: transform, opacity, filter;
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="space-canvas"></canvas>
+
+  <div class="home-hero__inner">
+    <h1 class="heading-xl">
+      <span class="word">
+        <span class="letter">C</span><span class="letter">é</span><span class="letter">l</span><span class="letter">i</span><span class="letter">a</span><span class="letter">n</span>
+      </span>
+    </h1>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const targets = gsap.utils.toArray(".letter");
+      const canvas = document.getElementById("space-canvas");
+      const ctx = canvas.getContext("2d");
+
+      function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+      resizeCanvas();
+      window.addEventListener("resize", resizeCanvas);
+
+      // Animation des étoiles
+      const numStars = 400;
+      const stars = [];
+      let warpSpeed = { val: 0 };
+
+      for (let i = 0; i < numStars; i++) {
+        stars.push({
+          x: (Math.random() - 0.5) * window.innerWidth * 2,
+          y: (Math.random() - 0.5) * window.innerHeight * 2,
+          z: Math.random() * window.innerWidth
+        });
+      }
+
+      function drawStars() {
+        ctx.fillStyle = "rgba(5, 2, 10, 0.3)";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+
+        for (let i = 0; i < numStars; i++) {
+          let star = stars[i];
+          star.z -= warpSpeed.val;
+
+          if (star.z <= 0) {
+            star.z = canvas.width;
+            star.x = (Math.random() - 0.5) * canvas.width * 2;
+            star.y = (Math.random() - 0.5) * canvas.height * 2;
+          }
+
+          let k = 400 / star.z;
+          let px = star.x * k + cx;
+          let py = star.y * k + cy;
+
+          if (px >= 0 && px <= canvas.width && py >= 0 && py <= canvas.height) {
+            let size = Math.max(0.5, (1 - star.z / canvas.width) * 3);
+            ctx.beginPath();
+            ctx.fillStyle = warpSpeed.val > 15 ? "#ff5555" : "#ffffff";
+            ctx.arc(px, py, size, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+        requestAnimationFrame(drawStars);
+      }
+      drawStars();
+
+      let isAnimating = false;
+
+      function triggerUniverseJourney() {
+        if (isAnimating) return;
+        isAnimating = true;
+
+        const tl = gsap.timeline({
+          onComplete: () => { 
+            // Réinitialise les styles inline pour garantir la position exacte du HTML/CSS
+            gsap.set(targets, { clearProps: "all" });
+            isAnimating = false; 
+          }
+        });
+
+        // 1. IMPLOSION vers le centre
+        tl.to(targets, {
+          duration: 0.5,
+          x: 0,
+          y: 0,
+          scale: 0,
+          rotation: () => gsap.utils.random(-180, 180),
+          opacity: 0,
+          filter: "blur(10px)",
+          stagger: 0.03,
+          ease: "power4.in"
+        })
+        
+        // 2. EFFET HYPERESPACE
+        .to(canvas, { opacity: 1, duration: 0.3 }, "-=0.2")
+        .to(warpSpeed, { val: 45, duration: 1.2, ease: "power2.in" })
+        .to(warpSpeed, { val: 0, duration: 1.2, ease: "power3.out" })
+        .to(canvas, { opacity: 0, duration: 0.5 }, "-=0.5")
+
+        // 3. RÉAPPARITION ET REMISE EN PLACE EXACTE
+        .set(targets, {
+          scale: 4,
+          opacity: 0,
+          filter: "blur(15px)",
+          x: () => gsap.utils.random(-100, 100),
+          y: () => gsap.utils.random(-80, 80)
+        })
+        .to(targets, {
+          duration: 1.2,
+          scale: 1,
+          x: 0,
+          y: 0,
+          rotation: 0,
+          opacity: 1,
+          filter: "blur(0px)",
+          stagger: {
+            amount: 0.3,
+            from: "center"
+          },
+          ease: "back.out(1.7)"
+        }, "-=0.4");
+      }
+
+      document.body.addEventListener("click", triggerUniverseJourney);
+    });
+  </script>
+</body>
+</html>
