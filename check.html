@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vérification de Sécurité | Célian</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+  <style>
+    body {
+      background-color: #0b0c10;
+      color: #ffffff;
+      font-family: system-ui, -apple-system, sans-serif;
+      overflow: hidden;
+      user-select: none;
+      touch-action: manipulation;
+    }
+
+    .glow-bg {
+      background: radial-gradient(circle at 50% 50%, rgba(225, 29, 72, 0.25), transparent 65%);
+    }
+
+    .gsap-char {
+      display: inline-block;
+      will-change: transform, opacity;
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+  </style>
+</head>
+<body class="min-h-screen w-full flex items-center justify-center relative p-4">
+
+  <div id="glow" class="fixed inset-0 glow-bg pointer-events-none z-0"></div>
+  <div class="fixed inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none z-0"></div>
+
+  <main id="main-card" class="glass-card relative z-10 text-center p-6 sm:p-10 rounded-3xl max-w-md w-full shadow-2xl flex flex-col items-center justify-center min-h-[400px]">
+    
+    <div id="troll-content" class="w-full">
+      <div id="badge" class="inline-flex items-center gap-2 px-3 py-1 mb-4 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-semibold tracking-widest uppercase opacity-0">
+        <span class="w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
+        Sécurité Requise
+      </div>
+
+      <h1 id="title" class="text-2xl sm:text-3xl font-black tracking-tight mb-2">
+        <span data-split>Prouvez que vous êtes humain</span>
+      </h1>
+
+      <p id="subtitle" class="text-xs sm:text-sm text-gray-400 mb-6">
+        Cliquez sur le bouton pour lancer l'analyse de sécurité.
+      </p>
+
+      <div class="h-20 w-full"></div>
+    </div>
+
+    <div id="loader-content" class="hidden flex-col items-center justify-center w-full">
+      <div id="loader-spinner" class="text-4xl mb-4 animate-spin">⚙️</div>
+      
+      <p id="status-text" class="text-sm font-mono text-rose-400 min-h-[48px] flex items-center justify-center px-2">
+        Initialisation du troll...
+      </p>
+
+      <div class="w-full bg-white/10 rounded-full h-3 overflow-hidden border border-white/20 my-4 relative">
+        <div id="progress-bar" class="bg-gradient-to-r from-rose-500 via-purple-500 to-indigo-500 h-full w-0 rounded-full transition-all duration-75"></div>
+      </div>
+
+      <span id="percent-text" class="text-xs font-mono text-gray-400">0%</span>
+    </div>
+
+    <div id="end-content" class="hidden flex-col items-center justify-center w-full">
+      <div class="text-5xl mb-4 animate-bounce">🤡</div>
+      <h2 class="text-2xl font-black text-rose-500 mb-2">T'as vraiment attendu ?</h2>
+      <p class="text-sm text-gray-300 mb-6 leading-relaxed">
+        Le chargement ne finira jamais, c'était 100% du vent !
+      </p>
+      <a href="index.html" class="px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-full text-sm font-bold text-white transition-all transform hover:scale-105 active:scale-95 shadow-lg">
+        ← Retourner vraiment à l'accueil
+      </a>
+    </div>
+
+  </main>
+
+  <button 
+    id="troll-btn" 
+    class="fixed z-50 px-6 py-3.5 sm:px-8 sm:py-4 bg-gradient-to-r from-rose-600 to-purple-600 text-white font-extrabold text-sm sm:text-base rounded-2xl shadow-xl shadow-rose-600/30 cursor-pointer flex items-center gap-2 whitespace-nowrap">
+    <span id="btn-text">Lancer l'analyse</span>
+    <span class="text-lg sm:text-xl">🤖</span>
+  </button>
+
+  <script>
+    // 1. Découpage du texte
+    document.querySelectorAll('[data-split]').forEach(el => {
+      const text = el.textContent;
+      el.innerHTML = text.split('').map(char => 
+        `<span class="gsap-char">${char === ' ' ? '&nbsp;' : char}</span>`
+      ).join('');
+    });
+
+    const chars = document.querySelectorAll('.gsap-char');
+    const btn = document.getElementById('troll-btn');
+    const mainCard = document.getElementById('main-card');
+
+    // Placer le bouton au centre au démarrage
+    function placeBtnInCard() {
+      const rect = mainCard.getBoundingClientRect();
+      gsap.set(btn, {
+        left: rect.left + (rect.width / 2) - (btn.offsetWidth / 2),
+        top: rect.bottom - 90
+      });
+    }
+    placeBtnInCard();
+
+    // 2. Intro GSAP
+    const introTL = gsap.timeline();
+    introTL.to('#badge', { opacity: 1, y: 0, duration: 0.5 })
+      .from(chars, {
+        duration: 0.6,
+        y: 30,
+        scale: 0,
+        opacity: 0,
+        rotation: () => gsap.utils.random(-10, 10),
+        ease: "back.out(2)",
+        stagger: 0.02
+      }, "-=0.2")
+      .from(btn, {
+        scale: 0,
+        opacity: 0,
+        duration: 0.5,
+        ease: "elastic.out(1, 0.5)"
+      }, "-=0.3");
+
+    // 3. Esquive du bouton (5 essais max)
+    let escapeCount = 0;
+    const maxEscapes = 4;
+
+    const messagesTroll = [
+      "Hop là ! 😜", "Trop lent !", "Presque...", "Raté 🤡"
+    ];
+
+    function dodge(e) {
+      if (e) e.preventDefault();
+      escapeCount++;
+
+      if (escapeCount > maxEscapes) {
+        startFakeLoading();
+        return;
+      }
+
+      document.getElementById('btn-text').textContent = messagesTroll[(escapeCount - 1) % messagesTroll.length];
+
+      const padding = 16;
+      const btnW = btn.offsetWidth;
+      const btnH = btn.offsetHeight;
+
+      const minX = padding;
+      const maxX = window.innerWidth - btnW - padding;
+      const minY = padding;
+      const maxY = window.innerHeight - btnH - padding;
+
+      const newX = gsap.utils.random(minX, maxX);
+      const newY = gsap.utils.random(minY, maxY);
+
+      // Particules
+      const rect = btn.getBoundingClientRect();
+      for (let i = 0; i < 4; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'fixed w-2.5 h-2.5 rounded-full bg-rose-500 pointer-events-none z-40';
+        dot.style.left = `${rect.left + btnW / 2}px`;
+        dot.style.top = `${rect.top + btnH / 2}px`;
+        document.body.appendChild(dot);
+
+        gsap.to(dot, {
+          x: gsap.utils.random(-30, 30),
+          y: gsap.utils.random(-30, 30),
+          scale: 0,
+          opacity: 0,
+          duration: 0.4,
+          onComplete: () => dot.remove()
+        });
+      }
+
+      gsap.to(btn, {
+        left: 0,
+        top: 0,
+        x: newX,
+        y: newY,
+        rotation: gsap.utils.random(-12, 12),
+        scale: gsap.utils.random(0.95, 1.05),
+        duration: 0.3,
+        ease: "power2.out"
+      });
+    }
+
+    btn.addEventListener('mouseenter', dodge);
+    btn.addEventListener('touchstart', dodge, { passive: false });
+    btn.addEventListener('click', dodge);
+
+    // 4. FAUX CHARGEMENT QUI AVANCE ET RECULE
+    function startFakeLoading() {
+      // Disparition du bouton
+      gsap.to(btn, { scale: 0, opacity: 0, duration: 0.3, onComplete: () => btn.remove() });
+
+      // Masquer le contenu initial
+      gsap.to('#troll-content', {
+        opacity: 0,
+        y: -15,
+        duration: 0.3,
+        onComplete: () => {
+          document.getElementById('troll-content').classList.add('hidden');
+          
+          const loader = document.getElementById('loader-content');
+          loader.classList.remove('hidden');
+          loader.classList.add('flex');
+
+          gsap.fromTo(loader, { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.4 });
+
+          runAbsurdProgressBar();
+        }
+      });
+    }
+
+    function runAbsurdProgressBar() {
+      const progressBar = document.getElementById('progress-bar');
+      const percentText = document.getElementById('percent-text');
+      const statusText = document.getElementById('status-text');
+
+      // Étapes du chargement (Valeur %, Durée sec, Message pourri)
+      const steps = [
+        { val: 25, dur: 0.8, msg: "Initialisation du processeur..." },
+        { val: 48, dur: 1.2, msg: "Téléchargement de plus de RAM..." },
+        { val: 12, dur: 0.6, msg: "⚠️ Oups ! Perte de connexion, retour en arrière..." },
+        { val: 65, dur: 1.5, msg: "Calcul du nombre Pi jusqu'à la fin..." },
+        { val: 89, dur: 1.0, msg: "Envoi de ton historique de recherche aux RG..." },
+        { val: 34, dur: 0.7, msg: "❌ Oubli d'un point-virgule dans le code. Annulation..." },
+        { val: 97, dur: 2.0, msg: "Presque fini ! Ne touchez à rien..." },
+        { val: 2,  dur: 0.5, msg: "💀 Erreur critique : Windows a rencontré un problème !" },
+        { val: 99, dur: 1.8, msg: "Optimisation de la patience..." },
+        { val: 0,  dur: 0.4, msg: "Formatage du système en cours... 🤡" }
+      ];
+
+      const tl = gsap.timeline({
+        onComplete: showEndScreen
+      });
+
+      steps.forEach((step) => {
+        tl.to(progressBar, {
+          width: `${step.val}%`,
+          duration: step.dur,
+          ease: step.val < 30 ? "power3.in" : "power1.inOut",
+          onStart: () => {
+            statusText.textContent = step.msg;
+            // Secousse si chute brutale
+            if (step.val < 20) {
+              gsap.to(mainCard, { x: 8, duration: 0.05, repeat: 3, yoyo: true });
+            }
+          },
+          onUpdate: function() {
+            const currentVal = Math.round(this.progress() * (step.val - (parseFloat(progressBar.style.width) || 0)) + (parseFloat(progressBar.style.width) || 0));
+            percentText.textContent = `${Math.min(100, Math.max(0, currentVal))}%`;
+          }
+        }, "+=0.2");
+      });
+    }
+
+    // 5. ÉCRAN DE FIN
+    function showEndScreen() {
+      gsap.to('#loader-content', {
+        opacity: 0,
+        scale: 0.8,
+        duration: 0.4,
+        onComplete: () => {
+          document.getElementById('loader-content').classList.add('hidden');
+          
+          const end = document.getElementById('end-content');
+          end.classList.remove('hidden');
+          end.classList.add('flex');
+
+          gsap.fromTo(end, 
+            { opacity: 0, scale: 0.8, y: 20 }, 
+            { opacity: 1, scale: 1, y: 0, duration: 0.6, ease: "back.out(1.7)" }
+          );
+        }
+      });
+    }
+  </script>
+</body>
+</html>
