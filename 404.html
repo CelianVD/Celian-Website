@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>404 — Page Introuvable | Célian</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+  <style>
+    body {
+      background-color: #0b0c10;
+      color: #ffffff;
+      font-family: system-ui, -apple-system, sans-serif;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    /* Halo rouge de fond */
+    .glow-bg {
+      background: radial-gradient(circle at 50% 50%, rgba(225, 29, 72, 0.25), transparent 65%);
+    }
+
+    .gsap-char {
+      display: inline-block;
+      will-change: transform, opacity;
+    }
+  </style>
+</head>
+<body class="min-h-screen w-full flex items-center justify-center relative">
+
+  <div class="fixed inset-0 glow-bg pointer-events-none z-0"></div>
+  <div class="fixed inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none z-0"></div>
+
+  <main class="relative z-10 text-center px-4 max-w-3xl mx-auto">
+    
+    <div id="code-404" class="text-8xl sm:text-9xl font-black text-rose-500 mb-2 tracking-tighter opacity-0 scale-50">
+      404
+    </div>
+
+    <h1 id="error-title" class="text-2xl sm:text-4xl font-extrabold tracking-tight mb-8">
+      <span data-split>Oups... Cette page n'existe pas !</span>
+    </h1>
+
+    <div id="actions" class="flex justify-center items-center opacity-0">
+      <button id="rickroll-btn" class="px-8 py-4 bg-gradient-to-r from-rose-600 to-purple-600 hover:from-rose-500 hover:to-purple-500 text-white font-bold text-lg rounded-full shadow-lg shadow-rose-600/30 transition-all transform hover:scale-105 flex items-center gap-2 cursor-pointer">
+        <span>Réparer la page</span> ✦
+      </button>
+    </div>
+
+  </main>
+
+  <div id="rickroll-modal" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center opacity-0 pointer-events-none transition-all duration-500 p-4">
+    
+    <div class="relative w-full max-w-4xl aspect-video rounded-2xl overflow-hidden shadow-2xl border border-rose-500/30">
+      <iframe 
+        id="rick-iframe"
+        class="w-full h-full"
+        src="" 
+        title="Rick Astley"
+        frameborder="0" 
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+        allowfullscreen>
+      </iframe>
+    </div>
+
+    <a href="index.html" class="mt-6 px-6 py-2 bg-white/10 hover:bg-white/20 rounded-full text-xs text-gray-300 hover:text-white transition">
+      Retourner à l'accueil
+    </a>
+
+  </div>
+
+  <script>
+    // 1. Découpage du texte en lettres
+    document.querySelectorAll('[data-split]').forEach(el => {
+      const text = el.textContent;
+      el.innerHTML = text.split('').map(char => 
+        `<span class="gsap-char">${char === ' ' ? '&nbsp;' : char}</span>`
+      ).join('');
+    });
+
+    const chars = document.querySelectorAll('.gsap-char');
+
+    // 2. Timeline d'apparition GSAP
+    const tl = gsap.timeline();
+
+    tl.to('#code-404', {
+      opacity: 1,
+      scale: 1,
+      duration: 1,
+      ease: "elastic.out(1, 0.4)"
+    })
+    .from(chars, {
+      duration: 0.8,
+      y: 60,
+      scale: 0,
+      opacity: 0,
+      rotation: () => gsap.utils.random(-20, 20),
+      ease: "back.out(2)",
+      stagger: 0.03
+    }, "-=0.5")
+    .to('#actions', {
+      opacity: 1,
+      y: 0,
+      duration: 0.6,
+      ease: "power2.out"
+    }, "-=0.3");
+
+    // 3. Déclenchement du Rickroll au clic sur le seul bouton
+    const rickBtn = document.getElementById('rickroll-btn');
+    const modal = document.getElementById('rickroll-modal');
+    const iframe = document.getElementById('rick-iframe');
+
+    rickBtn.addEventListener('click', () => {
+      // Force le chargement direct avec lecture automatique
+      iframe.src = "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&mute=0&controls=1&enablejsapi=1";
+
+      // Animation d'ouverture de la modal
+      modal.classList.remove('pointer-events-none');
+      gsap.to(modal, {
+        opacity: 1,
+        duration: 0.5,
+        ease: "power3.out"
+      });
+
+      // Animation d'éparpillage des éléments en arrière-plan
+      gsap.to(chars, {
+        x: () => gsap.utils.random(-300, 300),
+        y: () => gsap.utils.random(-200, 200),
+        rotation: () => gsap.utils.random(-180, 180),
+        opacity: 0,
+        duration: 0.6
+      });
+      gsap.to('#code-404', { scale: 2, opacity: 0, duration: 0.5 });
+    });
+  </script>
+
+</body>
+</html>
